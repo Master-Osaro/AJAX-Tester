@@ -32,7 +32,17 @@
             <option value="Axios">Axios</option>
             <option value="Fetch">Fetch</option>
         </select>
-    </div>
+    </div><br>
+
+    <!-- Upcoming Feature: Add Post -->
+    <!-- <div>
+        <select name="" id="method">
+            <option value="GET">get</option>
+            <option value="POST">post</option>
+        </select>
+    </div><br> -->
+
+
     <div><input type="button" name="sender" value="MakeRequest"/></div>
     <div id="output"></div>
     <!-- jQuery Import -->
@@ -55,6 +65,9 @@
                    break;
                case "Axios":
                ajaxAX(url);
+                    break;
+               case "Fetch":
+               ajaxFe(url);
                     break; 
                default:
                ajaxJS(url);
@@ -65,8 +78,25 @@
         }
 
         //Function to use AXIOS to consume api. Axios is promise based
+        function ajaxFe(url) {
+            console.log("Using Fetch");
+            fetch(url).then( function(response) {
+                //check status
+                return response.json();   
+            }
+            ).catch(function(error) {
+                output(error,"0","Fetch FAILED")
+            }).then(
+                function(response) {
+                    console.log(response);
+                    output(response,"200","JSFetch Response");
+                }
+            );
+        }
+
+        //Function to use AXIOS to consume api. Axios is promise based
         function ajaxAX(url) {
-            console.log("ajaxJQ");
+            console.log("Using Axios");
             axios({
                url: url,
                type:"GET"
@@ -80,7 +110,7 @@
 
         //Function to use JQuery to consume api
         function ajaxJQ(url) {
-            console.log("ajaxJQ");
+            console.log("Using JQuery");
             $.ajax({
                url: url,
                type:"GET",
@@ -92,7 +122,8 @@
 
         //Function to use JavaScript XHR to consume api
         function ajaxJS(url) {
-             let xhr = new XMLHttpRequest();
+            console.log("Using XHR JavaScript");
+            let xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
                 if(xhr.readyState==4&&xhr.status==200){
                     console.log(xhr.responseText);
