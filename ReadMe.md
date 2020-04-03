@@ -1,5 +1,5 @@
 # Ajax-tester (..in progress)
-* Mini html Postman like app to test web api's, displays the api's strigified response, status code and message in the browser
+* Mini html, "Postman like" app to test web api's, displays the api's strigified response, status code and message in the browser
 
 ## How to run
 * Open index.html, Enter the address in the url field
