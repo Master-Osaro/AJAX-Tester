@@ -23,10 +23,12 @@
     </style>
 </head>
 <body>
+    <!-- http://s179017901.onlinehome.us/discoveryvip/    https://randomuser.me/api/  -->
     <h1>AJAX Tester</h1>
-    <div>URL: <input type="text" name="url" id="input" value="https://randomuser.me/api/"/> </div><br>
+    <div>URL: <input type="text" name="url" id="input" value="" placeholder="API URL"/> </div><br>
     <div>
-        <select name="" id="response">
+        <label for="res-opt">Resource Type: </label>
+        <select name="res-opt" id="response">
             <option value="Javascript">Javascript</option>
             <option value="jQuery">jQuery</option>
             <option value="Axios">Axios</option>
@@ -34,13 +36,21 @@
         </select>
     </div><br>
 
-    <!-- Upcoming Feature: Add Post -->
-    <!-- <div>
-        <select name="" id="method">
+    <!-- Upcoming Feature: Add Method Selection -->
+    <div>
+        <label for="opt">Method: </label>
+        <select name="opt" id="method">
             <option value="GET">get</option>
             <option value="POST">post</option>
         </select>
-    </div><br> -->
+    </div><br>
+
+    <legend>POST Parameters (if using "post" method):
+        <form id="myForm" name="myForm">
+            <input type="text" name="first" value="" placeholder="param1">
+            <input type="text" name="num" value="" placeholder="param1">
+        </form> <br>  
+    </legend> 
 
 
     <div><input type="button" name="sender" value="MakeRequest"/></div>
@@ -59,28 +69,45 @@
            let url = document.querySelector('input[name="url"]').value;
            let resource = document.querySelector('#response').value;
 
+           let method = document.querySelector('#method').value;
+           let temp = document.querySelector('#myForm');
+           let form = new FormData(temp);
+           let formd = $('#myForm').serialize(); //same as the form variable, just a better implementation in jQuery
+           
+        //    console.log("JS Form FormData Value: ", form); //for Debug
+        //    console.log("JQuery Form Serialize Value: ", formd); //for Debug
+           
            switch (resource) {
                case "jQuery":
-               ajaxJQ(url);
+               ajaxJQ(url,method,formd);
                    break;
                case "Axios":
-               ajaxAX(url);
+               ajaxAX(url,method,form);
                     break;
                case "Fetch":
-               ajaxFe(url);
+               ajaxFe(url,method,form);
                     break; 
                default:
-               ajaxJS(url);
+               ajaxJS(url,method,form);
                    break;
            }
-           //console.log(url);
+           //console.log(url); //For Debug
            
         }
 
-        //Function to use AXIOS to consume api. Axios is promise based
-        function ajaxFe(url) {
-            console.log("Using Fetch");
-            fetch(url).then( function(response) {
+        //Function to use JS Fetch to consume api.
+        function ajaxFe(url,method,formd) {
+            console.log("Using Fetch: "+ method); //For Debug
+
+            //fetch takes in parameters for POST. Using a tenary operator here to check the type
+            //of method being used. If Post, assign parameters else return an empty object
+            let parameters = method == "POST" ? {
+                method: method,
+                body: formd,
+                headers: {'Content-Type':'application/x-www-form-urlencoded'}
+            } : {};
+
+            fetch(url,parameters).then( function(response) {
                 //check status
                 return response.json();   
             }
@@ -95,43 +122,65 @@
         }
 
         //Function to use AXIOS to consume api. Axios is promise based
-        function ajaxAX(url) {
+        function ajaxAX(url,method,formd) {
             console.log("Using Axios");
             axios({
                url: url,
-               type:"GET"
+               type:method,
+               data:formd
             }).then(
                 function(response) {
                     console.log(response);
                     output(response.data,response.status,"Axios Response");
                 }
-            );
+            ).catch(function (error) {
+                output(response.data,response.status,"Axios FAIL");
+            });
         }
 
         //Function to use JQuery to consume api
-        function ajaxJQ(url) {
-            console.log("Using JQuery");
+        function ajaxJQ(url,method,formd) {
+            console.log("Using JQuery: "+method);
             $.ajax({
                url: url,
-               type:"GET",
+               type:method,
+               data: formd,
                success: function(data){console.log(data)},
             }).done(function(response,textStatus,xhr) {
                 output(response,xhr.status,"jQuery Response");
+            }).fail(function(response,textStatus,xhr) {
+                output(response,xhr.status,"jQuery ERROR");
             });
         }
 
         //Function to use JavaScript XHR to consume api
-        function ajaxJS(url) {
-            console.log("Using XHR JavaScript");
+        function ajaxJS(url,method,form) {
+            console.log("Using XHR JavaScript to " +method); //For Debug
             let xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function() {
-                if(xhr.readyState==4&&xhr.status==200){
-                    console.log(xhr.responseText);
-                    output(xhr.responseText,xhr.status,"JavaScript XHR Response");
+                if(xhr.readyState==4){
+                    if(xhr.status==200){
+                        console.log(xhr.responseText);
+                        output(xhr.responseText,xhr.status,"JavaScript XHR GET Response");
+                    } else if(xhr.status==201){
+                        console.log(xhr.responseText);
+                        output(xhr.responseText,xhr.status,"JavaScript XHR POST Response");
+                    } else{
+                        output(xhr.responseText,xhr.status,"JavaScript Error");
+                    } 
                 }
             }
-            xhr.open('GET',url,true);
-            xhr.send();
+
+            if(method=="GET"){
+                xhr.open("GET",url,true);
+                xhr.send();
+            } else{
+                xhr.open("POST",url,true);
+                //xhr.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+                xhr.send(form);
+            }
+            
+            
         }
 
         //function to display stringifiedJSON response in the output div, called in ajaxJS, ajaxJQ, ajaxAX methods
