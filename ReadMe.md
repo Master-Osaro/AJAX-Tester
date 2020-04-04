@@ -1,4 +1,4 @@
-# Ajax-tester (..in progress)
+# Ajax-tester
 * Mini html, "Postman like" app to test web api's, displays the api's strigified response, status code and message in the browser
 
 ## How to run
