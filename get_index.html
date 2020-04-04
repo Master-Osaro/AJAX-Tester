@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AJAX_Tester</title>
+    <style>
+        .heading{
+            display: block;
+            width: 100%;
+            border: 1px solid black;
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+        }
+
+        div > p{
+            font-size: 0.8em;
+            color: #111;
+            padding: 20px;
+            background-color: #ddd;
+        } 
+    </style>
+</head>
+<body>
+    <h1>AJAX Tester</h1>
+    <div>URL: <input type="text" name="url" id="input" value="https://randomuser.me/api/"/> </div><br>
+    <div>
+        <select name="" id="response">
+            <option value="Javascript">Javascript</option>
+            <option value="jQuery">jQuery</option>
+            <option value="Axios">Axios</option>
+            <option value="Fetch">Fetch</option>
+        </select>
+    </div><br>
+
+    <!-- Upcoming Feature: Add Post -->
+    <!-- <div>
+        <select name="" id="method">
+            <option value="GET">get</option>
+            <option value="POST">post</option>
+        </select>
+    </div><br> -->
+
+
+    <div><input type="button" name="sender" value="MakeRequest"/></div>
+    <div id="output"></div>
+    <!-- jQuery Import -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- Axios Import -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Event listener to make sure DOM Contant has loadent
+        document.addEventListener("DOMContentLoaded",function(event){
+            document.querySelector('input[name="sender"]').addEventListener('click',makeRequest);
+        });
+        
+        function makeRequest() {
+           let url = document.querySelector('input[name="url"]').value;
+           let resource = document.querySelector('#response').value;
+
+           switch (resource) {
+               case "jQuery":
+               ajaxJQ(url);
+                   break;
+               case "Axios":
+               ajaxAX(url);
+                    break;
+               case "Fetch":
+               ajaxFe(url);
+                    break; 
+               default:
+               ajaxJS(url);
+                   break;
+           }
+           //console.log(url);
+           
+        }
+
+        //Function to use AXIOS to consume api. Axios is promise based
+        function ajaxFe(url) {
+            console.log("Using Fetch");
+            fetch(url).then( function(response) {
+                //check status
+                return response.json();   
+            }
+            ).catch(function(error) {
+                output(error,"0","Fetch FAILED")
+            }).then(
+                function(response) {
+                    console.log(response);
+                    output(response,"200","JSFetch Response");
+                }
+            );
+        }
+
+        //Function to use AXIOS to consume api. Axios is promise based
+        function ajaxAX(url) {
+            console.log("Using Axios");
+            axios({
+               url: url,
+               type:"GET"
+            }).then(
+                function(response) {
+                    console.log(response);
+                    output(response.data,response.status,"Axios Response");
+                }
+            );
+        }
+
+        //Function to use JQuery to consume api
+        function ajaxJQ(url) {
+            console.log("Using JQuery");
+            $.ajax({
+               url: url,
+               type:"GET",
+               success: function(data){console.log(data)},
+            }).done(function(response,textStatus,xhr) {
+                output(response,xhr.status,"jQuery Response");
+            });
+        }
+
+        //Function to use JavaScript XHR to consume api
+        function ajaxJS(url) {
+            console.log("Using XHR JavaScript");
+            let xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+                if(xhr.readyState==4&&xhr.status==200){
+                    console.log(xhr.responseText);
+                    output(xhr.responseText,xhr.status,"JavaScript XHR Response");
+                }
+            }
+            xhr.open('GET',url,true);
+            xhr.send();
+        }
+
+        //function to display stringifiedJSON response in the output div, called in ajaxJS, ajaxJQ, ajaxAX methods
+        function output(responseText,status,xhr) {
+            let output = document.getElementById("output");
+            output.innerHTML = "";
+            responseText = ((typeof responseText)=='string')?JSON.parse(responseText) : responseText;
+            output.innerHTML = '<div><span class="heading"> Response Text </span><p>'+JSON.stringify(responseText)+'</p></div><br>';
+            output.innerHTML+= '<div><span class="heading"> Status </span><p>'+JSON.stringify(status)+'</p></div>';
+            output.innerHTML+= '<div><span class="heading"> Message </span><p>'+JSON.stringify(xhr)+'</p></div>';
+            }
+
+    </script>
+
+</body>
+</html>
